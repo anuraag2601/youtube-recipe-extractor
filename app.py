@@ -47,6 +47,9 @@ def index():
 
         # Transcribe video and extract ingredients using OpenAI
         ingredients, audio_path, full_transcript = transcribe_and_extract(video_link)
+        if not ingredients or not audio_path or not full_transcript:
+        # Handle the error, e.g., display an error message to the user
+            return render_template('error.html', error_message=full_transcript)
         recipe = Recipe(video_link=video_link, video_title=video_title, thumbnail=thumbnail, ingredients=ingredients)
         db.session.add(recipe)
         db.session.commit()
@@ -119,7 +122,8 @@ def transcribe_and_extract(video_link):
         stream = yt.streams.filter(only_audio=True, file_extension='mp4').first()
 
         if not stream:
-            return "Status: No audio stream in mp4 format available for this video."
+            return None, None, "Status: No audio stream in mp4 format available for this video."
+
 
         audio_file_path = stream.download(filename=f"temp_audio_{uuid.uuid4()}")
         #return "Status: Audio downloaded successfully."
@@ -141,7 +145,7 @@ def transcribe_and_extract(video_link):
             response_data = response.json()
 
         if "results" not in response_data:
-            return f"Deepgram Error: {response_data.get('message', 'Unknown error')}"
+            return None, None, f"Deepgram Error: {response_data.get('message', 'Unknown error')}"
 
         full_transcript = response_data["results"]["channels"][0]["alternatives"][0]["transcript"]
         
@@ -178,7 +182,8 @@ def transcribe_and_extract(video_link):
     
 
     except Exception as e:
-        return f"An error occurred: {str(e)}"
+        return None, None, f"An error occurred: {str(e)}"
+
 
 
 with app.app_context():
