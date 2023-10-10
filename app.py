@@ -31,6 +31,7 @@ openai.api_key = OPENAI_API_KEY
 class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video_link = db.Column(db.String(500), nullable=False)
+    
     video_title = db.Column(db.String(500), nullable=True)
     thumbnail = db.Column(db.String(500), nullable=True)  
     ingredients = db.Column(db.Text, nullable=False)
