@@ -6,8 +6,6 @@ import os
 from pytube import YouTube
 from pydub import AudioSegment
 import requests
-import assemblyai as aai
-import requests
 import uuid
 
 
@@ -18,19 +16,12 @@ DATABASE_URL = os.environ.get('DATABASE_URL')  # for Heroku deployment
 if not DATABASE_URL:
     DATABASE_URL = "postgresql://postgres:trinity@123@localhost/recipe_db"
 
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'
 db = SQLAlchemy()
 db.init_app(app)
 
 DEEPGRAM_API_URL = "https://api.deepgram.com/v1/listen?smart_format=true&language=en&model=nova-2-ea"
 DEEPGRAM_API_KEY = "c1e595d28689872f3f3275f2c027d8c93a2f6490"
-
-transcript_endpoint = "https://api.assemblyai.com/v2/transcript"
-aai.settings.api_key = f"8e7c1a33fdf246018e027d06dafffa8e"
-
-#COHERE_API_URL = "https://api.cohere.ai/v1/summarize"
-COHERE_API_KEY = "u5OXaUpIMa6fQQWArvB15fBpGWV8WLxotr1EjZ6p"
 
 OPENAI_API_KEY = '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'
 openai.api_key = OPENAI_API_KEY
@@ -158,38 +149,24 @@ def transcribe_and_extract(video_link):
         with open("transcript.txt", "w") as f:
             f.write(full_transcript)
 
-        
-    #    # 3. Extract ingredients from the transcript using Cohere
-    #     co = cohere.Client(COHERE_API_KEY)
-    #     response = co.summarize(
-    #         text=full_transcript,
-    #         additional_command=" This is a youtube recipe transcript. Generate a recipe from this transcript that can be easily followed along with all the ingredients and steps. Summarize the ingredients required for the recipe first and then detail out the steps. Ensure you don't miss out on any steps or ingredients by double checking your response before generatring the final output.",
-    #         extractiveness = 'medium',
-    #         length = 'long',
-    #         format='bullets'
-    #     )
-        #response_data = response.json()
-
-        #if "error" in response_data:
-            #return f"Cohere Error: {response['error']}"
-
+        #3. Get ingredients and recipe steps from OpenAI 
         response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-        {
-        "role": "system",
-        "content": "This is a Youtube recipe transcript. Generate a recipe from this transcript that can be easily followed along with all the ingredients and steps. Summarize the ingredients required for the recipe first and then detail out the steps. Ensure you don't miss out on any steps or ingredients by double checking your response before generating the final output."
-        },
-        {
-        "role": "user",
-        "content": full_transcript}
-        ],
-        temperature=1,
-        max_tokens=1000,
-        top_p=1,
-        frequency_penalty=0,
-        presence_penalty=0
-        )
+            model="gpt-4",
+            messages=[
+            {
+                "role": "system",
+                "content": "This is a Youtube recipe transcript. Generate a recipe from this transcript that can be easily followed along with all the ingredients and steps. Summarize the ingredients required for the recipe first and then detail out the steps. Ensure you don't miss out on any steps or ingredients by double checking your response before generating the final output."
+            },
+            {
+                "role": "user",
+                "content": full_transcript}
+                ],
+            temperature=1,
+            max_tokens=1000,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0
+            )
 
         extracted_ingredients = response["choices"][0]["message"]["content"]
 
