@@ -3,20 +3,22 @@ from flask_sqlalchemy import SQLAlchemy
 from youtube_transcript_api import YouTubeTranscriptApi
 import openai
 import os
-import base64
 from pytube import YouTube
 from pydub import AudioSegment
 import requests
-import cohere
 import assemblyai as aai
 import requests
-import json
-import time
 import uuid
 
 
 
 app = Flask(__name__)
+
+DATABASE_URL = os.environ.get('DATABASE_URL')  # for Heroku deployment
+if not DATABASE_URL:
+    DATABASE_URL = "postgresql://postgres:trinity@123@localhost/recipe_db"
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///recipes.db'
 db = SQLAlchemy()
 db.init_app(app)
