@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Extractor</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Add Recipe Video</h1>
+        <div class="form-wrapper">
+            <form action="/" method="POST">
+                <input type="text" name="video_link" placeholder="Paste YouTube video link..." required>
+                <input type="submit" value="Submit">
+                <!-- Status Message -->
+                <div id="statusMessage"></div>
+            </form>
+        </div>
+        <h3>Extracted Recipes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Video Title</th>
+                    <th>Thumbnail</th>
+                    <th>Ingredients and steps</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for recipe in recipes %}
+                <tr>
+                    <td>{{ recipe.video_title }}</td>
+                    <!-- Thumbnail made clickable -->
+                    <td><a href="{{ recipe.video_link }}" target="_blank"><img src="{{ recipe.thumbnail }}" alt="{{ recipe.video_title }}" class="thumbnail"></a></td>
+                    <td>
+                        <div class="recipe-list">
+                            {% for item in recipe.ingredients.split("|||") %}
+                                <p>{{ item }}</p>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <!-- Download Buttons for Each Row -->
+                    <td>
+                        <a href="/download_audio/{{ recipe.id }}" target="_blank">Download Audio</a>
+                        <a href="/download_transcript/{{ recipe.id }}" target="_blank">Download Transcript</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add JavaScript to update status message -->
+<script>
+    const statusMessage = document.getElementById('statusMessage');
+    
+    document.querySelector('form').addEventListener('submit', function() {
+        statusMessage.textContent = "Extracting ingredients and steps...";
+    });
+    
+    if (window.location.search.includes("done=true")) {
+        statusMessage.textContent = "Done!";
+    }
+</script>
+    </div>
+</body>
+</html>
